@@ -40,7 +40,7 @@ class TimerApp:
         self.start_button = tk.Button(self.button_frame, text="Start", command=self.start_timer)
         self.start_button.grid(row=0, column=0, padx=5)
 
-        self.pause_button = tk.Button(self.button_frame, text="Pause", command=self.pause_timer)
+        self.pause_button = tk.Button(self.button_frame, text="Pause", command=self.toggle_pause)
         self.pause_button.grid(row=0, column=1, padx=5)
 
         self.reset_button = tk.Button(self.button_frame, text="Reset", command=self.reset_timer)
@@ -52,6 +52,7 @@ class TimerApp:
         self.root.after(1000, self.update_clock)  # update every second
 
     def start_timer(self):
+        # Start fresh
         try:
             minutes = int(self.minute_entry.get() or 0)
             seconds = int(self.second_entry.get() or 0)
@@ -59,20 +60,30 @@ class TimerApp:
             if new_total <= 0:
                 self.timer_label.config(text="Invalid!")
                 return
-            self.total_seconds = new_total  # update total seconds
-            if not self.running:  # only start countdown if not running
-                self.running = True
-                self.countdown()
+            self.total_seconds = new_total
+            self.running = True
+            self.pause_button.config(text="Pause")  # reset label
+            self.countdown()
         except ValueError:
             self.timer_label.config(text="Invalid!")
 
-    def pause_timer(self):
-        self.running = False
+    def toggle_pause(self):
+        if self.running:
+            # Pause the timer
+            self.running = False
+            self.pause_button.config(text="Resume")
+        else:
+            # Resume the timer
+            if self.total_seconds > 0:
+                self.running = True
+                self.pause_button.config(text="Pause")
+                self.countdown()
 
     def reset_timer(self):
         self.running = False
         self.total_seconds = 0
         self.timer_label.config(text="00:00")
+        self.pause_button.config(text="Pause")  # reset label
 
     def countdown(self):
         if self.running and self.total_seconds >= 0:
@@ -83,6 +94,7 @@ class TimerApp:
         elif self.total_seconds < 0:
             self.timer_label.config(text="Time's up!")
             self.running = False
+            self.pause_button.config(text="Pause")  # reset button
 
 
 root = tk.Tk()
